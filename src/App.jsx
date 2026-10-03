@@ -60,7 +60,12 @@ function Auth({ onLogin }) {
     try {
       const data = await request(`/auth/${register ? 'register' : 'login'}`, { method: 'POST', body: form, auth: false })
       if (register) { setRegister(false); setNotice(data.message); setForm({ ...form, identity: form.username, password: '' }) }
-      else { saveSession(data); onLogin(data.user) }
+      else {
+        if (!data.access_token || !data.refresh_token || !data.user?.id || !data.user?.username) {
+          throw new Error('Sign-in did not complete. Refresh this page and try again.')
+        }
+        saveSession(data); onLogin(data.user)
+      }
     } catch (err) { setError(err.message) } finally { setBusy(false) }
   }
   const field = key => ({ value: form[key], onChange: e => setForm({ ...form, [key]: e.target.value }) })

@@ -21,7 +21,20 @@ export async function request(path, { method = 'GET', body, auth = true, retry =
       throw error
     }
   }
-  const data = response.status === 204 ? {} : await response.json().catch(() => ({ error: 'The API returned an unexpected response. Check the backend configuration.' }))
+  let data = {}
+  if (response.status !== 204) {
+    try { data = await response.json() }
+    catch {
+      const error = new Error(response.status >= 500
+        ? 'The server is temporarily unavailable. Please try again shortly.'
+        : 'The server returned an unexpected response. Refresh this page and try again.')
+      error.status = response.status
+      throw error
+    }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('The server returned an unexpected response. Refresh this page and try again.')
+    }
+  }
   if (!response.ok) {
     if (response.status === 401 && auth) { clearSession(); window.dispatchEvent(new Event('session-expired')) }
     const error = new Error(data.error || 'Something went wrong. Please try again.')
