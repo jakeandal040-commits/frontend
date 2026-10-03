@@ -1,4 +1,6 @@
-﻿const base = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : '/lab6/public/api')).replace(/\/$/, '')
+const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+const defaultBase = import.meta.env.DEV ? '/api' : localHost ? '/lab6/public/api' : 'https://backend-znst.onrender.com/api'
+const base = (import.meta.env.VITE_API_URL?.trim() || defaultBase).replace(/\/$/, '')
 const key = 'stockroom-session'
 let refreshing = null
 export function getSession() { try { return JSON.parse(sessionStorage.getItem(key)) } catch { return null } }
